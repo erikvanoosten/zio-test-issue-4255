@@ -20,12 +20,12 @@ object IssueSpec extends DefaultRunnableSpec {
   def spec =
     suite("Issue 4225 Spec")(
       testM("failing test when run in parallel") {
-        val program = SearchService.search(input, 20)
+        val program = SearchService.search(input, parallelism = 20)
         val layers = mockEnv >>> SearchService.live
         assertM(program)(equalTo(26)).provideLayer(layers)
       },
       testM("successful test when run sequentially") {
-        val program = SearchService.search(input, 1)
+        val program = SearchService.search(input, parallelism = 1)
         val layers = mockEnv >>> SearchService.live
         assertM(program)(equalTo(26)).provideLayer(layers)
       },
