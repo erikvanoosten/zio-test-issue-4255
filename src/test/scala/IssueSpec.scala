@@ -24,7 +24,7 @@ object IssueSpec extends DefaultRunnableSpec {
         val layers = mockEnv >>> SearchService.live
         assertM(program)(equalTo(26)).provideLayer(layers)
       },
-      testM("successful test with run sequentially") {
+      testM("successful test when run sequentially") {
         val program = SearchService.search(input, 1)
         val layers = mockEnv >>> SearchService.live
         assertM(program)(equalTo(26)).provideLayer(layers)
