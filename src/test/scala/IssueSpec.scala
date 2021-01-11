@@ -18,7 +18,7 @@ object IssueSpec extends DefaultRunnableSpec {
     .reduce(_ && _)
 
   def spec =
-    suite("Issue 4225 Spec")(
+    suite("Issue 4255 Spec")(
       testM("failing test when run in parallel") {
         val program = SearchService.search(input, parallelism = 20)
         val layers = mockEnv >>> SearchService.live
