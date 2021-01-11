@@ -1,3 +1,4 @@
+import StorageService.StorageService
 import zio._
 import zio.test._
 import zio.test.Assertion._
@@ -6,26 +7,27 @@ import zio.test.mock.mockable
 
 //noinspection TypeAnnotation
 object IssueSpec extends DefaultRunnableSpec {
-  @mockable[Srv.Service]
-  object SrvMock
 
-  def method = Srv.mPar("b").zipPar(Srv.mPar("c"))
+  val input: Seq[String] = "abcdefghijklmnopqrstuvwxyz".toSeq.map(_.toString)
+
+  val mockEnv: ULayer[StorageService] = input
+    .zipWithIndex
+    .map { case (c, i) =>
+      StorageSrvMock.Fetch(equalTo(c), value(i.toString))
+    }
+    .reduce(_ && _)
 
   def spec =
-    suite("IssueSpec")(
-      testM("failing test") {
-        val mockEnv =
-          SrvMock.MPar(equalTo("b"), value("bRes")) &&
-            SrvMock.MPar(equalTo("c"), value("cRes"))
-
-        assertM(method)(equalTo(("bRes", "cRes"))).provideLayer(mockEnv)
+    suite("Issue 4225 Spec")(
+      testM("failing test when run in parallel") {
+        val program = SearchService.search(input, 20)
+        val layers = mockEnv >>> SearchService.live
+        assertM(program)(equalTo(26)).provideLayer(layers)
       },
-      testM("successful test with a nasty hack (atMost(1))") {
-        val mockEnv =
-          SrvMock.MPar(equalTo("b"), value("bRes")).atMost(1) &&
-            SrvMock.MPar(equalTo("c"), value("cRes"))
-
-        assertM(method)(equalTo(("bRes", "cRes"))).provideLayer(mockEnv)
+      testM("successful test with run sequentially") {
+        val program = SearchService.search(input, 1)
+        val layers = mockEnv >>> SearchService.live
+        assertM(program)(equalTo(26)).provideLayer(layers)
       },
     )
 }
